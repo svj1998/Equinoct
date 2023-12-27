@@ -1,0 +1,24 @@
+# Load necessary libraries
+library(raster)
+library(sf)
+
+# Set working directory
+setwd("C:\\cygwin64\\bin")
+
+# Read the NetCDF file
+nc_file <- raster("2018_year.nc")
+
+# Read the shapefile
+shape <- st_read("C:\\Users\\ACER\\Documents\\Sruthin Tasks\\India_State_Shapefile\\India_State_Shapefile\\India_State_Boundary.shp")
+
+# Crop the NetCDF file using the shapefile
+cropped_nc <- crop(nc_file, shape)
+# Create a folder for output if it doesn't exist
+output_folder <- "output"
+if (!file.exists(output_folder)) {
+  dir.create(output_folder)
+}
+
+# Save the cropped NetCDF file in the output folder
+output_file <- file.path(output_folder, "2018cropped.nc")
+writeRaster(cropped_nc, filename = output_file, format = "CDF")
