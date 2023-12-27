@@ -1,25 +1,31 @@
-# Set the working directory where your NetCDF files are located
+# Working Directory setup
 setwd("C:\\cygwin64\\bin\\output")
 
-# Load necessary libraries
+# libraries
 library(raster)
 library(ggplot2)
 library(sf)
 library(RColorBrewer)
+
 # Function to plot NetCDF file as a heatmap with India shapefile
 plot_heatmap_with_shapefile <- function(nc_file, year, shapefile) {
-  # Read the NetCDF file
+  # Reading NetCDF file
   nc <- raster(nc_file)
   
-  # Extract raster values as a data frame
+  # Extracting the raster to data frame
   df <- as.data.frame(nc, xy = TRUE)
   names(df) <- c("x", "y", "value")
   
-  # Read India shapefile
+  # Reading Indian shapefile
   india <- st_read(shapefile)
+  
+  #setting a palette
   my_palette <- brewer.pal(6, "YlOrRd")
+
   # Plot heatmap using ggplot with India shapefile overlay
   p <- ggplot() +
+   
+#The rest are plot modifications made
     geom_tile(data = df, aes(x = x, y = y, fill = value), color = NA) +  # Removing grid lines
     geom_sf(data = india, fill = NA, color = "black", size = 10.0) + # Overlay India shapefile
     scale_fill_gradientn(colors = my_palette) +  # Setting legend breaks and labels
@@ -39,7 +45,7 @@ plot_heatmap_with_shapefile <- function(nc_file, year, shapefile) {
           
           plot.title = element_text(size = 18, face = "bold", hjust = 0.5, margin = margin(b = -20)),
           panel.border = element_blank(),
-          legend.title = element_text(face = "bold", size = 12, color = "black", margin = margin(b = 10)),  # Modify legend title style
+          legend.title = element_text(face = "bold", size = 12, color = "black", margin = margin(b = 10)),  
           legend.text = element_text(size = 10),  # Modify legend text style
           legend.key = element_rect(fill = "lightgrey"),
           legend.position = "right",  # Adjust legend position inside the plot
