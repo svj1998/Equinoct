@@ -1,0 +1,80 @@
+# Set the working directory where your NetCDF files are located
+setwd("C:\\cygwin64\\bin\\output")
+
+# Load necessary libraries
+library(raster)
+library(ggplot2)
+library(sf)
+library(RColorBrewer)
+# Function to plot NetCDF file as a heatmap with India shapefile
+plot_heatmap_with_shapefile <- function(nc_file, year, shapefile) {
+  # Read the NetCDF file
+  nc <- raster(nc_file)
+  
+  # Extract raster values as a data frame
+  df <- as.data.frame(nc, xy = TRUE)
+  names(df) <- c("x", "y", "value")
+  
+  # Read India shapefile
+  india <- st_read(shapefile)
+  my_palette <- brewer.pal(6, "YlOrRd")
+  # Plot heatmap using ggplot with India shapefile overlay
+  p <- ggplot() +
+    geom_tile(data = df, aes(x = x, y = y, fill = value), color = NA) +  # Removing grid lines
+    geom_sf(data = india, fill = NA, color = "black", size = 10.0) + # Overlay India shapefile
+    scale_fill_gradientn(colors = my_palette) +  # Setting legend breaks and labels
+    labs(title = paste(year," Precipitation Average"),
+         fill = "Mean RF",
+         x = "Longitude",
+         y = "Latitude") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(size = 10),
+          axis.text.y = element_text(size = 10),
+          axis.title = element_text(size = 14, face = "bold"),
+          axis.ticks.length = unit(0.01, "cm"),
+          axis.ticks.x = element_line(color = "black"),  # X-axis tick marks
+          axis.ticks.y = element_line(color = "black"),  # Y-axis tick marks
+          panel.grid.major.x = element_blank(),  # Remove top gridline
+          panel.grid.major.y = element_blank(),  # Remove right gridline
+          
+          plot.title = element_text(size = 18, face = "bold", hjust = 0.5, margin = margin(b = -20)),
+          panel.border = element_blank(),
+          legend.title = element_text(face = "bold", size = 12, color = "black", margin = margin(b = 10)),  # Modify legend title style
+          legend.text = element_text(size = 10),  # Modify legend text style
+          legend.key = element_rect(fill = "lightgrey"),
+          legend.position = "right",  # Adjust legend position inside the plot
+          legend.justification = c("right", "bottom"),
+          legend.box.just = "right",
+          legend.key.size = unit(2, "lines"),
+          legend.margin = margin(t = 5, r = 5, b = 5, l = 5),  # Adjust legend margin
+          legend.background = element_rect(color = "black", fill = "white"),  # Add white box around legend
+          plot.background = element_rect(color = "white", fill = NA, size = 1))  # Add border around the plot area
+  
+  return(p)
+}
+# File names and corresponding years
+file_years <- list(
+  c("2018cropped.nc", "2018"),
+  c("2019cropped.nc", "2019"),
+  c("2020cropped.nc", "2020"),
+  c("2021cropped.nc", "2021")
+)
+
+# India shapefile path
+india_shapefile <- "C:\\Users\\ACER\\Documents\\Sruthin Tasks\\India_State_Shapefile\\India_State_Shapefile\\India_State_Boundary.shp"
+
+# Plot and save each heatmap with India shapefile
+for (i in seq_along(file_years)) {
+  file <- file_years[[i]][1]
+  year <- file_years[[i]][2]
+  
+  nc_file <- file # Assuming the NetCDF files are in the current working directory
+  
+  plot <- plot_heatmap_with_shapefile(nc_file, year, india_shapefile)
+  
+  # Save each plot as a JPEG file
+  jpeg_filename <- paste0("heatmap_", year, ".jpeg")
+  ggsave(filename = jpeg_filename, plot = plot, width = 10, height = 8, units = "in")
+  
+  print(plot)
+}
